@@ -37,7 +37,7 @@ def findLayerVariableValue (ename, evalue):
 
     return None
 
-def findLayersVariableValue (ename=None, evalues=None, dbpath=None, dbtnames=None):
+def findLayersVariableValue (ename, evalues=None, dbpath=None, dbtnames=None):
 
     rd = {}
     tot = 0
