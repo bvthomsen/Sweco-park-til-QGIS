@@ -483,7 +483,8 @@ class SwecoPark:
             noError += 1
 
         if noError == 0:
-
+            noErr = 0
+            
             # Upload all added objects
             url = self.config["Access"]["HttpAddress"]+ self.config["Commands"]["CreateElement"].format(self.ticket)
             noAdd = 0
@@ -497,7 +498,8 @@ class SwecoPark:
                 if scode == 200:
                     noAdd += self.updateReturnElement(dict, str(f['id']),pntLayer, pntLayerRef, attLayer, attLayerRef)
                 else:
-                    hLog ('Upload added point: {} error : {}'.format (f['fid'],scode),'Sweco')
+                    noErr += 1
+                    hLog ('Upload added point: {} error : {}'.format (f['fid'],scode),'Sweco Errors')
 
             feats = linLayerAdded.getFeatures()
             
@@ -508,8 +510,9 @@ class SwecoPark:
                 if scode == 200:
                     noAdd += self.updateReturnElement(dict, str(f['id']),linLayer, linLayerRef, attLayer, attLayerRef)
                 else:
-                    hLog ('Upload added line: {} error : {}'.format (f['fid'],scode),'Sweco')
-
+                    noErr += 1
+                    hLog ('Upload added line: {} error : {}'.format (f['fid'],scode),'Sweco Errors')
+                    
             feats = polLayerAdded.getFeatures()
 
             for f in feats:
@@ -518,7 +521,8 @@ class SwecoPark:
                 if scode == 200:
                     noAdd += self.updateReturnElement(dict, str(f['id']),polLayer, polLayerRef, attLayer, attLayerRef)
                 else:
-                    hLog ('Upload added polygon: {} error : {}'.format (f['fid'],scode),'Sweco')
+                    noErr += 1
+                    hLog ('Upload added polygon: {} error : {}'.format (f['fid'],scode),'Sweco Errors')
 
 
             # Upload all modified objects
@@ -533,7 +537,8 @@ class SwecoPark:
                 if scode == 200:
                     noMod += self.updateReturnElement(dict, str(f['id']),pntLayer, pntLayerRef, attLayer, attLayerRef)
                 else:
-                    hLog ('Upload modified point: {} error : {}'.format (f['fid'],scode),'Sweco')
+                    noErr += 1
+                    hLog ('Upload modified point: {} error : {}'.format (f['fid'],scode),'Sweco Errors')
 
             feats = linLayerModified.getFeatures()
 
@@ -543,7 +548,8 @@ class SwecoPark:
                 if scode == 200:
                     noMod += self.updateReturnElement(dict, str(f['id']),linLayer, linLayerRef, attLayer, attLayerRef)
                 else:
-                    hLog ('Upload modified line: {} error : {}'.format (f['fid'],scode),'Sweco')
+                    noErr += 1
+                    hLog ('Upload modified line: {} error : {}'.format (f['fid'],scode),'Sweco Errors')
 
             feats = polLayerModified.getFeatures()
 
@@ -554,7 +560,8 @@ class SwecoPark:
                 if scode == 200:
                     noMod += self.updateReturnElement(dict, str(f['id']),polLayer, polLayerRef, attLayer, attLayerRef)
                 else:
-                    hLog ('Upload modified polygon: {} error : {}'.format (f['fid'],scode),'Sweco')
+                    noErr += 1
+                    hLog ('Upload modified polygon: {} error : {}'.format (f['fid'],scode),'Sweco Errors')
 
             # Upload all deleted objects
             noDel = 0
@@ -567,7 +574,8 @@ class SwecoPark:
                 if scode == 200:
                     noDel += self.updateReturnElementDel(dict, str(f['id']), pntLayer, pntLayerRef, attLayer, attLayerRef)
                 else:
-                    hLog ('Upload deleted point: {} error : {}'.format (f['fid'],scode),'Sweco')
+                    noErr += 1
+                    hLog ('Upload deleted point: {} error : {}'.format (f['fid'],scode),'Sweco Errors')
 
             feats = linLayerDeleted.getFeatures()
 
@@ -576,9 +584,9 @@ class SwecoPark:
                 scode, dict = handleRequest (True,url,None,currentframe().f_code.co_name)
                 if scode == 200:
                     noDel += self.updateReturnElementDel(dict, str(f['id']), linLayer, linLayerRef, attLayer, attLayerRef)
-                    hLog ('Upload deleted line: {} succes: {} dict: {}'.format (f['fid'],url, dict),'Sweco')
                 else:
-                    hLog ('Upload deleted line: {} error : {}'.format (f['fid'],scode),'Sweco')
+                    noErr += 1
+                    hLog ('Upload deleted line: {} error : {}'.format (f['fid'],scode),'Sweco Errors')
 
             feats = polLayerDeleted.getFeatures()
 
@@ -589,9 +597,10 @@ class SwecoPark:
                 if scode == 200:
                     noDel += self.updateReturnElementDel(dict, str(f['id']), polLayer, polLayerRef, attLayer, attLayerRef)
                 else:
-                    hLog ('Upload deleted polygon: {} error : {}'.format (f['fid'],scode),'Sweco')
+                    noErr += 1
+                    hLog ('Upload deleted pol: {} error : {}'.format (f['fid'],scode),'Sweco Errors')
             
-            hInfo ('SWECO transfer modifications','Total number of elements added: {}; modified {}; deleted: {}'.format(noAdd,noMod,noDel) ,10)
+            hInfo ('SWECO transfer modifications','Total number of elements added: {}; modified {}; deleted: {}; upload errors {}'.format(noAdd,noMod,noDel,noErr) ,10)
 
         else:
             hCritical ('SWECO transfer modifications','One or more errors has disabled function - Is modification layers visible ?',10)
@@ -901,17 +910,8 @@ class SwecoPark:
     
                 # Get dict with elements
                 http = self.config["Access"]["HttpAddress"]+ self.config["Commands"]["GetElementsId"].format(self.ticket,et['id'])
-                hLog ('pbImporterData_clicked - request:\n{}'.format(http),'Sweco log')
-
                 scode, dict = handleRequest (True,http,None,currentframe().f_code.co_name)
                 if scode == 200:
-
-#                response = requests.post(http)
-#    
-#                if response.status_code == 200:
-#            
-#                    dict = response.json()
-#                    hLog ('pbImporterData_clicked - response:\n{}'.format(dict),'Sweco log')
 
                     i = 0
                     feats = []
@@ -1049,7 +1049,6 @@ class SwecoPark:
                     self.iface.mapCanvas().refreshAllLayers()
                    
                     hInfo ('SWECO Import data','Elementimport - Alle: No of imports: {} / {}'.format(i,dict['TotalCount']),10)
-                    hLog ('Elementimport - Alle: No of imports: {} / {}'.format(i,dict['TotalCount']),'Sweco')
 
                 else:                    
                     hCritical ('SWECO Park rest-api','SWECO not responding as expected, no data fetched',10)
@@ -1431,7 +1430,6 @@ class SwecoPark:
                 
             if self.swecoLogin.cbAdmData.isChecked():
                 # Update administrative data    
-                hInfo ('SWECO Opdater administrative data','Hav tålmodighed - det tager et stykke tid', 5)                
                 self.workareatypesUpdateData()
                 self.workareasUpdateData()
                 self.elementtypesUpdateData()
