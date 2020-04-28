@@ -1416,7 +1416,7 @@ class SwecoPark:
         self.swecoLogin = SwecoLogin(None)
 
         # Generate first dummy token
-        self.token = self.swecoLogin.joinToken (self.config["Access"]["HttpAddress"],self.config["Commands"]["GettingAccessToken"],self.config["Commands"]["GetElementDetail"],70,self.config["Access"]["Username"], self.config["Access"]["Password"] , self.ticket, self.ticketTime)   
+        self.token = self.swecoLogin.joinToken (self.config["Access"]["HttpAddress"],self.config["Commands"]["GettingAccessToken"],self.config["Commands"]["GetElementDetail"],7000,self.config["Access"]["Username"], self.config["Access"]["Password"] , self.ticket, self.ticketTime)   
 
         # Show login dialog        
         self.ticket, self.token = self.swecoLogin.refreshLogin(self.token)
