@@ -17,7 +17,7 @@ from sweco_park.helper import hLog, hInfo, hWarning, hCritical, findLayerVariabl
 #, tr , removeGroup, clearGroupLayer, addMemoryLayer2tree, addMemoryLayer2treeNG, cnvobj2wkt, wkbtype2simple, cnvobj2obj, fillResultTree, removeGroupLayer
 import requests
 from PyQt5.QtSql import QSqlDatabase, QSqlQuery
-import settings
+#import settings -- brug SwecoPark.settings
 from inspect import currentframe
 
 gbDialog = None
@@ -48,8 +48,14 @@ def my_form_open(dialog, layer, feature):
         gbTree.setSelectionMode(QAbstractItemView.SingleSelection)
         gbTree.itemDoubleClicked.connect(gbTreeItemDoubleClicked)
 
-    gbGetAttributeData = dialog.findChild(QWidget,"pbGetAttributeData")
-    gbGetAttributeData.clicked.connect(gbGetAttributeDataClicked)
+    gbGetAttributeDataLocal = dialog.findChild(QWidget,"pbGetAttributeDataLocal")
+    gbGetAttributeDataLocal.clicked.connect(gbGetAttributeDataLocalClicked)
+
+    gbGetAttributeDataSweco = dialog.findChild(QWidget,"pbGetAttributeDataSweco")
+    gbGetAttributeDataSweco.clicked.connect(gbGetAttributeDataSwecoClicked)
+
+    gbGetAttributeDataDefault = dialog.findChild(QWidget,"pbGetAttributeDataDefault")
+    gbGetAttributeDataDefault.clicked.connect(gbGetAttributeDataDefaultClicked)
 
     global gbUuid
     if not gbUuid: 
@@ -215,7 +221,7 @@ def pbUuidClicked():
     if buttonReply == QMessageBox.Yes:
         gbId.setText(str(uuid.uuid1()))
 
-def gbGetAttributeDataClicked ():
+def gbGetAttributeDataLocalClicked ():
 
     tview = gbTwAttributter
     etid = gbEtId.text()
@@ -227,12 +233,47 @@ def gbGetAttributeDataClicked ():
 
     elif etid != '' and id != '':
 
-        loadTwAttributter (edLayer, tview, id, gbType, etid)
+        loadTwAttributter (edLayer, tview, id, gbType, etid,0)
 
     else:
         hCritical ('SWECO Update Element details','Not possible to show/import/generate element atrributtes, because id and/or element type is vot set',10)    
     
-def loadTwAttributter (edLayer, tview, id, gtype, etid):
+def gbGetAttributeDataSwecoClicked ():
+
+    tview = gbTwAttributter
+    etid = gbEtId.text()
+    id = gbId.text()
+    edLayer = findLayerVariableValue('sweco_function','element_detail_layer')
+
+    if edLayer is None:
+        hCritical ('SWECO Update Element details','Table with element details not found',10)
+
+    elif etid != '' and id != '':
+
+        loadTwAttributter (edLayer, tview, id, gbType, etid,1)
+
+    else:
+        hCritical ('SWECO Update Element details','Not possible to show/import/generate element atrributtes, because id and/or element type is vot set',10)    
+
+def gbGetAttributeDataDefaultClicked ():
+
+    tview = gbTwAttributter
+    etid = gbEtId.text()
+    id = gbId.text()
+    edLayer = findLayerVariableValue('sweco_function','element_detail_layer')
+
+    if edLayer is None:
+        hCritical ('SWECO Update Element details','Table with element details not found',10)
+
+    elif etid != '' and id != '':
+
+        loadTwAttributter (edLayer, tview, id, gbType, etid,2)
+
+    else:
+        hCritical ('SWECO Update Element details','Not possible to show/import/generate element atrributtes, because id and/or element type is vot set',10)    
+
+
+def loadTwAttributter (edLayer, tview, id, gtype, etid, atype):
 
     tview.clear()
     for i in range(22): tview.setColumnWidth(i,0)
@@ -240,31 +281,35 @@ def loadTwAttributter (edLayer, tview, id, gtype, etid):
     tview.setColumnWidth(11,175)
     tview.setHorizontalHeaderLabels(['fid','elementid','id','key','name','description','unit','datatype','mandatory','readonly','defaultvalue','value','validationmin','validationmax','validationdecimal','validationexpression','validationsqlexpression','validationerrmessage','elementattributetypeid','validationvalues','children','parent'])
 
-    # Find attribute date in local table
-    feats = getElementDetailData(edLayer, id)
+    if atype == 0:
 
-    if feats:
-        hInfo ('SWECO Update Element details','Data found in local table',5)
+        # Find attribute date in local table
+        feats = getElementDetailData(edLayer, id)
+        if feats:
+            hInfo ('SWECO Update Element details','Data found in local table',5)
+        else:
+            hWarning ('SWECO Update Element details','Data could not be found in local table',4)
 
-    else:
-
-        # Not found : Find attribute date using SWECO rest api
+    elif atype == 1:
+    
+        # Find attribute date in SWECO and put into local table
         elementDetailUpdateData(edLayer, id)
         feats = getElementDetailData(edLayer, id)
 
         if feats: 
             hInfo ('SWECO Update Element details','Data generated using SWECO api',5)
-
         else:
-            # Not found : Generate data from other similar element
-            elementDetailGenerateData(edLayer, id, gtype, etid)
-            feats = getElementDetailData(edLayer, id)
+            hWarning ('SWECO Update Element details','Data could not be found at SWECO',4)
 
-            if feats: 
-                hInfo ('SWECO Update Element details','Data generated using defalt values',5)
+    else: # atype == 2
 
-            else:
-                hWarning ('SWECO Update Element details','Data could not be generated',8)
+        # Generate attribute data from another element and put into local table
+        elementDetailGenerateData(edLayer, id, gtype, etid)
+        feats = getElementDetailData(edLayer, id)
+        if feats: 
+            hInfo ('SWECO Update Element details','Data generated using defalt values',5)
+        else:
+            hWarning ('SWECO Update Element details','Data could not be generated, no template in local table',4)
 
     tview.setRowCount(len(feats))
     for i,f in enumerate(feats):

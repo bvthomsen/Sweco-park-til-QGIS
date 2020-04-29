@@ -8,7 +8,7 @@ from inspect import currentframe
 from os import path
 from base64 import urlsafe_b64encode, urlsafe_b64decode
 import requests
-#import settings
+#import settings -- brug SwecoPark.settings
 
 trClassName= ''
 key = 'DumINakkenMetodeSomIkkeFungerer'

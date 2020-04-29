@@ -17,7 +17,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>1</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="tab">
       <attribute name="title">
@@ -303,11 +303,29 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="pbGetAttributeData">
-         <property name="text">
-          <string>Hent attribut data </string>
-         </property>
-        </widget>
+        <layout class="QHBoxLayout" name="horizontalLayout_2">
+         <item>
+          <widget class="QPushButton" name="pbGetAttributeDataLocal">
+           <property name="text">
+            <string>Hent lokale attr. </string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pbGetAttributeDataSweco">
+           <property name="text">
+            <string>Hent SWECO attr </string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pbGetAttributeDataDefault">
+           <property name="text">
+            <string>Generer standard attr</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
       </layout>
      </widget>
