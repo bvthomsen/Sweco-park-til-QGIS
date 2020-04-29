@@ -37,20 +37,21 @@ def findLayerVariableValue (ename, evalue):
 
     return None
 
-def findLayersVariableValue (ename, evalues=None, dbpath=None, dbtnames=None):
+def findLayersVariableValue (ename=None, evalues=None, dbpath=None, dbtnames=None):
 
     rd = {}
     tot = 0
     fnd = 0
 
-    for ev in evalues:
-        tot += 1
-        rd[ev]= None
-        for l in QgsProject.instance().layerTreeRoot().findLayers():
-            if ev == QgsExpressionContextUtils.layerScope(layer.layer()).variable(ename): 
-                rd[ev] = layer.layer()
-                fnd += 1
-                break
+    if ename is not None: 
+        for ev in evalues:
+            tot += 1
+            rd[ev]= None
+            for l in QgsProject.instance().layerTreeRoot().findLayers():
+                if ev == QgsExpressionContextUtils.layerScope(layer.layer()).variable(ename): 
+                    rd[ev] = layer.layer()
+                    fnd += 1
+                    break
 
     if dbpath is not None: 
         for dbtn in dbtnames:
